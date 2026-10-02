@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Простое приложение для заметок</title>
+</head>
+<body>
+    <h1>Заметки</h1>
+    <form method="POST" action="/add">
+        <input type="text" name="title" placeholder="Заголовок">
+        <textarea name="content" placeholder="Содержание"></textarea>
+        <button type="submit">Добавить</button>
+    </form>
+    <ul>
+        {% for note in notes %}
+        <li>
+            <b>{{ note[1] }}</b> <!-- note[1] это title -->
+            <p>{{ note[2] }}</p> <!-- note[2] это content -->
+            <a href="/edit/{{ note[0] }}">Редактировать</a> <!-- note[0] это id -->
+            <a href="/delete/{{ note[0] }}">Удалить</a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Оставьте ваш отзыв</h2>
+    <form method="POST" action="/submit_feedback">
+        <label for="username">Имя:</label><br>
+        <input type="text" id="username" name="username"><br>
+        <label for="feedback">Отзыв:</label><br>
+        <textarea id="feedback" name="feedback"></textarea><br>
+        <input type="submit" value="Отправить">
+    </form>
+</body>
+</html>

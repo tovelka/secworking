@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Редактирование заметки</title>
+</head>
+<body>
+    <h1>Редактирование заметки</h1>
+    <form method="POST" action="/edit/{{ note[0] }}"> <!-- note[0] это id -->
+        <input type="text" name="title" value="{{ note[1] }}"> <!-- note[1] это title -->
+        <textarea name="content">{{ note[2] }}</textarea> <!-- note[2] это content -->
+        <button type="submit">Сохранить</button>
+    </form>
+</body>
+</html>
