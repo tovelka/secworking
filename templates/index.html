@@ -2,32 +2,88 @@
 <html>
 <head>
     <title>Простое приложение для заметок</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <h1>Заметки</h1>
-    <form method="POST" action="/add">
-        <input type="text" name="title" placeholder="Заголовок">
-        <textarea name="content" placeholder="Содержание"></textarea>
-        <button type="submit">Добавить</button>
-    </form>
+
+    {% if current_user.is_authenticated %}
+    <p>Привет, {{ current_user.username }}! 
+        <a href="{{ url_for('logout') }}">Выйти</a>
+    </p>
+    {% else %}
+        <p><a href="{{ url_for('login') }}">Войти</a> или 
+           <a href="{{ url_for('register') }}">Зарегистрироваться</a></p>
+    {% endif %}
+    
+    {% if current_user.is_authenticated %}
+        <form method="POST" action="/add">
+            {{ form.hidden_tag() }}
+            <p>
+                {{ form.title.label }}<br>
+                {{ form.title(size=50) }}
+                {% if form.title.errors %}
+                    <ul>
+                    {% for error in form.title.errors %}
+                        <li style="color: red;">{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
+            <p>
+                {{ form.content.label }}<br>
+                {{ form.content(rows=10, cols=50) }}
+                {% if form.content.errors %}
+                    <ul>
+                    {% for error in form.content.errors %}
+                        <li style="color: red;">{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
+            <p>
+                {{ form.submit() }}
+            </p>
+        </form>
+    {% endif %}
+    <hr>
     <ul>
         {% for note in notes %}
         <li>
-            <b>{{ note[1] }}</b> <!-- note[1] это title -->
-            <p>{{ note[2] }}</p> <!-- note[2] это content -->
-            <a href="/edit/{{ note[0] }}">Редактировать</a> <!-- note[0] это id -->
-            <a href="/delete/{{ note[0] }}">Удалить</a>
+            <p><small>Создано: {{ note.created_at }}</small></p>
+            <b>{{ note.title }}</b>
+            <p>{{ note.content }}</p>
+            <a href="/edit/{{ note.id }}">Редактировать</a>
+            <a href="/delete/{{ note.id }}">Удалить</a>
         </li>
         {% endfor %}
     </ul>
 
     <h2>Оставьте ваш отзыв</h2>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div style="color: green;">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
     <form method="POST" action="/submit_feedback">
-        <label for="username">Имя:</label><br>
-        <input type="text" id="username" name="username"><br>
-        <label for="feedback">Отзыв:</label><br>
-        <textarea id="feedback" name="feedback"></textarea><br>
-        <input type="submit" value="Отправить">
+        {{ feedback_form.hidden_tag() }}
+        <p>
+            {{ feedback_form.message.label }}<br>
+            {{ feedback_form.message(rows=10, cols=50) }}
+            {% if feedback_form.message.errors %}
+                <ul>
+                {% for error in feedback_form.message.errors %}
+                    <li style="color: red;">{{ error }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        </p>
+        <p>
+            {{ feedback_form.submit() }}
+        </p>
     </form>
 </body>
 </html>
