@@ -16,6 +16,7 @@ from flask_login import (
     login_required,
     current_user,
 )
+from flask_talisman import Talisman
 from flask_wtf.csrf import CSRFProtect
 
 from config import Config
@@ -23,8 +24,13 @@ from database import db
 from models import Note, User
 from schemas import NoteForm, LoginForm, RegisterForm, FeedbackForm
 
-
 app = Flask(__name__)
+
+app.config.update(
+    SESSION_COOKIE_SECURE=True,  # https
+    SESSION_COOKIE_HTTPONLY=True,  # !js
+    SESSION_COOKIE_SAMESITE='Lax',
+)
 
 app.secret_key = Config.SECRET_KEY
 
@@ -35,6 +41,24 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
     f'@{Config.DB_HOST}:{Config.DB_PORT}/{Config.DB_NAME}'
 )
 db.init_app(app)
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Frame-Options'] = 'DENY'  # iframe
+
+    response.headers['X-Content-Type-Options'] = 'nosniff'  # mime file type
+
+    response.headers['Strict-Transport-Security'] = (
+        'max-age=31536000; includeSubDomains'  # https запоминание
+    )
+
+    response.headers['Referrer-Policy'] = (
+        'strict-origin-when-cross-origin'  # При переходе на др url все параметры url убираются и остаются только origin
+    )
+
+    return response
+
 
 migrate = Migrate(app, db)
 
@@ -54,6 +78,28 @@ mydb = psycopg.connect(
     user=Config.DB_USER,
     password=Config.DB_PASSWORD,
     dbname=Config.DB_NAME,
+)
+
+
+csp = {
+    'default-src': "'self'",
+    'script-src': "'self'",
+    'style-src': "'self'",
+    'img-src': ["'self'", 'data:'],  # data
+    'font-src': "'self'",
+    'frame-ancestors': "'none'",  # iframe
+    'base-uri': "'self'",  # href
+    'form-action': "'self'",  # отправка
+}
+
+Talisman(
+    app,
+    content_security_policy=csp,
+    content_security_policy_nonce_in=[
+        'script-src',
+        'style-src',
+    ],  # генерация nonce для вставки в style и script
+    force_https=False,  # на dev, на проде - True для авторедиректа
 )
 
 
