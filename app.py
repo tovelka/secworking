@@ -228,4 +228,4 @@ def submit_feedback():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
