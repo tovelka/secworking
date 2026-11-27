@@ -27,7 +27,6 @@ jobs:
         run: uv sync --frozen
 
       - name: Run Bandit (SAST)
-        # Символ | позволяет писать многострочные команды без проблем с YAML
         run: |
           uv run bandit -r . -x ./.venv,./tests -ll
 
